@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Messaging;
 using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -7,7 +8,7 @@ using UnityEngine.UIElements;
 namespace DockGUI
 {
 
-    public class DockTabLayout : VisualElement
+    public class DockTabLayout : VisualElement, IDroppable
     {
         public List<DockTab> tabs;
 
@@ -17,6 +18,12 @@ namespace DockGUI
         private DockTab _selectedTab;
 
         private VisualElement _flexSpace;
+        private VisualElement _tabLayoutBg;
+
+        public DockLayout DockLayoutParent => (DockLayout)parent;
+        public bool IsFloating => DockLayoutParent.IsFloating;
+
+        public VisualElement TargetElement => this;
         
         public DockTabLayout()
         {
@@ -24,14 +31,22 @@ namespace DockGUI
             _panelToTabDict = new Dictionary<DockPanel, DockTab>();
             _tabToPanelDict = new Dictionary<DockTab, DockPanel>();
             
-            style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row);
+            styleSheets.Add(DockGUIStyles.DefaultStyle);
+            AddToClassList("TabLayoutHeight");
+            AddToClassList("TabLayout");
             
+            _tabLayoutBg = new VisualElement();
+            _tabLayoutBg.styleSheets.Add(DockGUIStyles.DefaultStyle);
             
-            _flexSpace = new VisualElement();
-            _flexSpace.name = "TabFlexSpace";
-            _flexSpace.style.flexGrow = 1;
+            _tabLayoutBg.AddToClassList("TabLayoutBg");
+            Add(_tabLayoutBg);
             
-            Add(_flexSpace);
+            RegisterCallback<MouseEnterEvent>(OnMouseEnter);
+        }
+
+        private void OnMouseEnter(MouseEnterEvent evt)
+        {
+            Debug.Log("ENTER TABLAYOUT");
         }
 
         public void AddTab(DockPanel targetPanel)
@@ -45,7 +60,7 @@ namespace DockGUI
             tabs.Add(tab);
             
             Deselect(tab);
-            Insert(childCount - 1, tab);
+            Add(tab);
         }
 
         public void RemoveTab(DockPanel targetPanel)
@@ -66,6 +81,7 @@ namespace DockGUI
             _tabToPanelDict.Remove(tab);
             
             tabs.Remove(tab);
+            Remove(tab);
         }
 
         public void OnTabClicked(DockTab dockTab)
@@ -112,5 +128,11 @@ namespace DockGUI
         {
             base.Add(element);
         }
+
+        public DockPanel GetPanel(DockTab tab)
+        {
+            return _tabToPanelDict[tab];
+        }
+
     }
 }

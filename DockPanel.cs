@@ -9,25 +9,57 @@ namespace DockGUI
 {
     public class DockPanel : VisualElement
     {
-        private string _title;
-        
-        public DockLayout DockLayoutParent => (DockLayout) parent;
-
-        public DockPanel(string title): this(title, DockGUIStyles.DefaultStyle) { }
-
         public List<DockPanel> dockedPanels;
-        private StyleSheet _styleSheet;
+        
+        private string _title;
 
         public string Title => _title;
+        public DockLayout DockLayoutParent => (DockLayout) parent;
+        public bool IsFloating => DockLayoutParent.IsFloating;
+
+        public DockPanel(string title) : this(title, DockGUIStyles.DefaultStyle) { }
 
         public DockPanel(string title, StyleSheet styleSheet)
         {
             _title = title;
-            _styleSheet = styleSheet;
-            // style.width = DockGUIStyles.DefaultStyleLength;
-            style.flexGrow = 1;
+            styleSheets.Add(styleSheet);
         }
 
-    }
+        public DockLayout FreeFloat(float x, float y)
+        {
+            DockLayout dockLayoutParent = DockLayoutParent;
+            List<DockPanel> dockPanels = dockLayoutParent.DockPanels;
 
+            DockLayout floatingLayout = null;
+
+            if (dockPanels.Count > 1)
+            {
+                VisualElement rootElement = dockLayoutParent.GetRootElement();
+                
+                dockLayoutParent.DockTabLayout.RemoveTab(this);
+
+                // create a new floating layout for this panel
+                floatingLayout = new DockLayout();
+                floatingLayout.state = DockLayout.State.Floating;
+                // floatingLayout.CreateTabLayout(this);
+
+                floatingLayout.Add(this);
+                
+                rootElement.Add(floatingLayout);
+                Debug.Log(rootElement.name);
+               
+            }
+            else
+            {
+                floatingLayout = dockLayoutParent;
+                
+            }
+
+            floatingLayout.AddToClassList("FloatingLayout");
+
+            floatingLayout.transform.position = new Vector3(x,y, floatingLayout.transform.position.z);
+
+            return floatingLayout;
+        }
+    }
 }

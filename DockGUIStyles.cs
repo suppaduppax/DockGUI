@@ -11,17 +11,26 @@ using UnityEditor;
 [InitializeOnLoad]
 public static class DockGUIStyles
 {
-    public static readonly StyleSheet DefaultStyle;
+    public static StyleSheet DefaultStyle;
+    
     public const float DEFAULT_LAYOUT_SIZE = 250f;
     public const LengthUnit DEFAULT_LAYOUT_SIZE_UNIT = LengthUnit.Pixel;
 
     public static StyleLength DefaultStyleLength;
 
     public static IStyle FlexLayoutStyle;
+
+    private const string _defaultStyleFilename = "DefaultStyle2.uss";
     
     static DockGUIStyles()
     {
-        var files = Directory.GetFiles(Application.dataPath, "DefaultStyle.uss", SearchOption.AllDirectories);
+        Refresh();
+    }
+
+    public static void Refresh()
+    {
+        Debug.Log("Refreshing...");
+        var files = Directory.GetFiles(Application.dataPath, _defaultStyleFilename, SearchOption.AllDirectories);
         if (files == null)
         {
             throw new Exception("Could not find default style...");

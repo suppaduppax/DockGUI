@@ -1,0 +1,21 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement style="flex-grow: 1; flex-direction: row; border-top-color: rgba(203, 203, 203, 255);">
+        <Style src="DefaultStyle.uss" />
+        <ui:VisualElement class="FloatingPanel">
+            <ui:VisualElement class="TabLayout" style="height: 15px; width: auto; background-color: rgba(165, 165, 165, 255); flex-direction: row;">
+                <ui:VisualElement style="flex-direction: row; flex-grow: 1; overflow: hidden;">
+                    <ui:VisualElement class="TabNormal">
+                        <ui:Label text="Label" style="font-size: 10px;" />
+                    </ui:VisualElement>
+                    <ui:VisualElement style="width: 52.33333px; flex-grow: 0; background-color: rgb(203, 203, 203); flex-direction: row; border-top-right-radius: 5px; border-top-width: 2px; border-top-color: rgba(60, 118, 192, 255); border-right-width: 0.5px; border-right-color: rgba(126, 126, 126, 255); border-left-width: 0.5px; border-left-color: rgba(126, 126, 126, 255);">
+                        <ui:Label text="Label" class="TabHighlight" />
+                    </ui:VisualElement>
+                    <ui:VisualElement style="flex-grow: 1; flex-direction: row-reverse;" />
+                    <ui:Button text="&lt;" name="TabLeftArrow" class="TabLeftArrowNormal" />
+                    <ui:Button text="&gt;" name="TabRightArrow" class="TabRightArrowNormal" />
+                    <ui:Button text="X" class="TabRightArrowNormal" style="margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; width: 15px; height: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-top-left-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; right: 0;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

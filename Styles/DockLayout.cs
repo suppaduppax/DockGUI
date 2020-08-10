@@ -1,18 +1,22 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using Priority_Queue;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Random = System.Random;
 
 namespace DockGUI
 {
     public class DockLayout : VisualElement
     {
-        public enum DockType
+        public enum State
         {
-            Fixed,
-            Stretch
+            None,
+            Docked,
+            Floating
         }
         
         public enum Direction
@@ -23,32 +27,49 @@ namespace DockGUI
             ReverseHorizontal,
         }
 
+        public State state;
         public bool isExpanded = false;
+        public bool hasDockPanels = false;
+
 
         private Direction _expandDirection;
-        
         private StyleSheet _styleSheet;
-        
-        private List<DockPanel> _dockedPanels;
+
         private Dictionary<Border, DockPanel> _borderToPanelDict;
-
         private List<Border> _availableBorders;
-
-        public bool hasDockPanels = false;
         private DockPanel _currentPanel;
-
         private DockTabLayout _dockTabLayout;
 
-        public DockLayout DockLayoutParent => (DockLayout) parent;
+        private VisualElement _rootElement;
 
-        public DockLayout() : this(DockGUIStyles.DefaultStyle) { }
+        public DockTabLayout DockTabLayout => _dockTabLayout;
+        public bool IsFloating => state == State.Floating;
+        public DockLayout DockLayoutParent => (DockLayout) parent;
         
+        public List<DockPanel> DockPanels
+        {
+            get
+            {
+                List<DockPanel> result = new List<DockPanel>();
+                foreach (var child in Children())
+                {
+                    if (child.GetType() == typeof(DockPanel))
+                    {
+                        result.Add((DockPanel)child);
+                    }
+                }
+
+                return result;
+            }
+        }
+        
+        public DockLayout() : this(DockGUIStyles.DefaultStyle) {}
+
         public DockLayout(StyleSheet styleSheet)
         {
-            _styleSheet = styleSheet;
-            _availableBorders = new List<Border>();
-            
             styleSheets.Add(styleSheet);
+            _availableBorders = new List<Border>();
+            AddToClassList("DockLayoutBg");
         }
 
         public void SetExpandDirection(Direction direction)
@@ -212,13 +233,48 @@ namespace DockGUI
             // }
         }
 
+        public void Float()
+        {
+            
+        }
+        
+        public void DetachAndFloatPanel(DockPanel dockPanel)
+        {
+            
+        }
+
+        public VisualElement GetRootElement()
+        {
+            if (parent == null)
+            {
+                return null;
+            }
+
+            VisualElement nextParent = parent;
+            VisualElement curParent = null;
+            
+            while (nextParent != null)
+            {
+                curParent = nextParent;
+                if (curParent != null && curParent.GetType() != typeof(DockLayout))
+                {
+                    break;
+                }
+                nextParent = nextParent.parent;
+            }
+
+            return curParent;
+        }
+
         public void Add(DockPanel panel)
         {
             hasDockPanels = true;
+            
             base.Add(panel);
-
+            
             if (childCount == 1)
             {
+                Debug.Log("TABS");
                 style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Column);
                 CreateTabLayout(panel);
                 SetCurrentPanel(panel);
@@ -230,7 +286,7 @@ namespace DockGUI
             }
         }
 
-        private void CreateTabLayout(DockPanel dockPanel)
+        public void CreateTabLayout(DockPanel dockPanel)
         {
             if (_dockTabLayout != null)
             {
@@ -242,6 +298,7 @@ namespace DockGUI
             _dockTabLayout.Select(dockPanel);
             
             Insert(0, _dockTabLayout);
+            
         }
 
         private void SetCurrentPanel(DockPanel dockPanel)
@@ -259,7 +316,8 @@ namespace DockGUI
         {
             dockPanel.style.display = new StyleEnum<DisplayStyle>(DisplayStyle.None);
         }
-        
+
+
         //
         // private void Remove(DockPanel dockPanel)
         // {

@@ -1,0 +1,23 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement class="TabLayoutHeight TabLayout">
+        <Style src="DefaultStyle2.uss" />
+        <ui:VisualElement name="TabLayoutBg" class="TabLayoutBg" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0;" />
+        <ui:VisualElement name="TabNormal" class="TabNormal TabPadding">
+            <ui:Label text="Label" name="TabLabel" class="TabLabelNormal" />
+        </ui:VisualElement>
+        <ui:VisualElement name="TabHighlight" class="TabPadding TabHighlight">
+            <ui:Label text="Label" class="TabLabelNormal" />
+        </ui:VisualElement>
+        <ui:VisualElement name="TabCloseButton" />
+        <ui:VisualElement name="TabAbsRight" style="position: absolute; right: 0; bottom: 0; top: 0; flex-direction: row;">
+            <ui:Button name="TabRightButton" class="TabButton TabRightButton TabButtonTint" />
+            <ui:Button name="TabCloseButton" class="TabButton TabCloseButton TabButtonTint" />
+        </ui:VisualElement>
+        <ui:VisualElement name="TabAbsLeft" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0;">
+            <ui:Button name="TabLeftButton" class="TabButton TabLeftButton TabButtonTint" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:Button text="baba">
+        <Style src="DefaultStyle2.uss" />
+    </ui:Button>
+</ui:UXML>

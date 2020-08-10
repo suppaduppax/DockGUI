@@ -1,0 +1,116 @@
+.TabHighlight {
+    flex-grow: 1;
+    -unity-text-align: middle-left;
+    font-size: 10px;
+    padding-left: 5px;
+}
+
+.TabNormal {
+    width: 52.33333px;
+    flex-grow: 0;
+    background-color: rgba(165, 165, 165, 255);
+    flex-direction: row;
+    border-top-right-radius: 5px;
+    border-top-width: 2px;
+}
+
+.TabCloseButtonNormal {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    width: 15px;
+    height: 15px;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    flex-direction: column;
+    flex-shrink: 0;
+    font-size: 6px;
+    background-color: rgb(165, 165, 165);
+    -unity-font-style: bold;
+    border-top-color: rgb(165, 165, 165);
+    border-left-color: rgb(165, 165, 165);
+    border-right-color: rgb(165, 165, 165);
+    border-bottom-color: rgb(165, 165, 165);
+    flex-grow: 0;
+}
+
+.TabRightArrowNormal {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    width: 15px;
+    height: 15px;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    flex-direction: column;
+    flex-shrink: 0;
+    font-size: 6px;
+    background-color: rgb(182, 182, 182);
+    -unity-font-style: bold;
+    border-top-color: rgb(165, 165, 165);
+    border-left-color: rgb(165, 165, 165);
+    border-right-color: rgb(165, 165, 165);
+    border-bottom-color: rgb(165, 165, 165);
+    flex-grow: 0;
+    position: absolute;
+    right: 15px;
+}
+
+.TabLeftArrowNormal {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    width: 15px;
+    height: 15px;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    flex-direction: column;
+    flex-shrink: 0;
+    font-size: 6px;
+    background-color: rgba(182, 182, 182, 255);
+    -unity-font-style: bold;
+    border-top-color: rgb(165, 165, 165);
+    border-left-color: rgb(165, 165, 165);
+    border-right-color: rgb(165, 165, 165);
+    border-bottom-color: rgb(165, 165, 165);
+    flex-grow: 0;
+    position: absolute;
+}
+
+.FloatingPanel {
+    width: 150px;
+    height: 150px;
+}

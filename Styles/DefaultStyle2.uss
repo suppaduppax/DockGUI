@@ -1,0 +1,113 @@
+.TabLayoutHeight {
+    height: 22px;
+}
+
+.TabLabelNormal {
+    font-size: 12px;
+}
+
+.TabLayoutBg {
+    flex-direction: row;
+    background-color: rgb(165, 165, 165);
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(146, 146, 146);
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.TabHighlight {
+    background-color: rgb(203, 203, 203);
+    border-top-right-radius: 3px;
+    border-left-width: 1px;
+    border-left-color: rgb(126, 126, 126);
+    border-right-width: 1px;
+    border-right-color: rgb(126, 126, 126);
+    border-top-color: rgb(60, 118, 192);
+    margin-top: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 1px;
+}
+
+.TabPadding {
+    flex-direction: column;
+    border-top-width: 2px;
+    padding-left: 3px;
+    padding-right: 6px;
+    padding-top: 1px;
+    padding-bottom: 3px;
+}
+
+.TabNormal {
+    flex-direction: column;
+    border-top-width: 2px;
+    border-bottom-width: 1px;
+    margin-top: 2px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+}
+
+.TabButton {
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-left: 2px;
+    margin-right: 2px;
+    margin-top: 1px;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    width: 18px;
+    height: 18px;
+    background-color: rgb(182, 182, 182);
+}
+
+.TabRightButton {
+    background-image: url('/Assets/Scripts/DockGUI/Styles/RightArrow.png');
+    background-color: rgb(182, 182, 182);
+}
+
+.TabButtonTint {
+    -unity-background-image-tint-color: rgb(85, 85, 85);
+}
+
+.TabLeftButton {
+    background-image: url('/Assets/Scripts/DockGUI/Styles/LeftArrow.png');
+}
+
+.TabCloseButton {
+    background-image: url('/Assets/Scripts/DockGUI/Styles/CloseIcon.png');
+}
+
+.TabLayout {
+    flex-direction: row;
+}
+
+.FloatingLayout {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-width: 1px;
+    border-color: rgb(146, 146, 146);
+    border-radius: 3;    
+}
+
+.DraggingLayout {
+}
+
+.DockLayoutBg {
+    background-color: rgb(194, 194, 194);
+}
+
+.GhostLayout {
+    opacity: 0.5;
+}
