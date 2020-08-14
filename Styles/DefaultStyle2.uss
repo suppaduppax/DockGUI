@@ -8,7 +8,7 @@
 
 .TabLayoutBg {
     flex-direction: row;
-    background-color: rgb(165, 165, 165);
+    /*background-color: rgb(165, 165, 165);*/
     border-bottom-width: 1px;
     border-bottom-color: rgb(146, 146, 146);
     position: absolute;
@@ -110,4 +110,7 @@
 
 .GhostLayout {
     opacity: 0.5;
+    position: absolute;
+    /*width: 200px;*/
+    /*height: 200px;*/
 }

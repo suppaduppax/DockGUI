@@ -30,9 +30,9 @@ namespace DockGUI
 
         public static void StartDrag(IDraggable target)
         {
-            _droppables = GetAllDroppables(GetRootElement(target.TargetElement));
             _draggingObject = target;
             _draggingObject.TargetElement.CaptureMouse();
+            RefreshDroppables();
         }
 
         private static VisualElement GetRootElement(VisualElement refElement)
@@ -44,9 +44,6 @@ namespace DockGUI
             {
                 parent = nextParent;
                 nextParent = nextParent.parent;
-                
-                Debug.Log(parent);
-                Debug.Log(nextParent);
             }
 
             return parent;
@@ -81,12 +78,15 @@ namespace DockGUI
             var children = rootElement.Children();
             foreach (var child in rootElement.Children())
             {
-                if (child is IDroppable droppable)
+                if (child.visible)
                 {
-                    result.Add(droppable);
+                    if (child is IDroppable droppable)
+                    {
+                        result.Add(droppable);
+                    }
+
+                    result.AddRange(GetAllDroppables(child));
                 }
-                
-                result.AddRange(GetAllDroppables(child));
             }
             return result;
         }
@@ -103,6 +103,11 @@ namespace DockGUI
             }
 
             return result;
+        }
+
+        public static void RefreshDroppables()
+        {
+            _droppables = GetAllDroppables(GetRootElement(_draggingObject.TargetElement));
         }
     }
 

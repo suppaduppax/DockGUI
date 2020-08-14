@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
+using System.Runtime.Remoting.Messaging;
 using Priority_Queue;
 using UnityEditor;
 using UnityEngine;
@@ -10,7 +11,7 @@ using Random = System.Random;
 
 namespace DockGUI
 {
-    public class DockLayout : VisualElement
+    public class DockLayout : VisualElement, IDroppable
     {
         public enum State
         {
@@ -45,6 +46,8 @@ namespace DockGUI
         public DockTabLayout DockTabLayout => _dockTabLayout;
         public bool IsFloating => state == State.Floating;
         public DockLayout DockLayoutParent => (DockLayout) parent;
+
+        public VisualElement TargetElement => this;
         
         public List<DockPanel> DockPanels
         {
@@ -174,9 +177,8 @@ namespace DockGUI
 
         private void Remove(DockPanel dockPanel)
         {
-            Debug.Log("Removing panel: " + dockPanel + " from " + name);
-            
             base.Remove(dockPanel);
+            return;
 
             if (childCount > 0)
             {
@@ -193,6 +195,8 @@ namespace DockGUI
         {
             Debug.Log("Removing " + dockLayout.name + " from " + name);
             base.Remove(dockLayout);
+            
+            return;
             
             if (childCount == 0)
             {
@@ -265,16 +269,26 @@ namespace DockGUI
 
             return curParent;
         }
-
+       
         public void Add(DockPanel panel)
         {
             hasDockPanels = true;
+
+            if (panel.DockLayoutParent != null)
+            {
+                if (panel.DockLayoutParent.state == State.Floating && panel.DockLayoutParent.DockPanels.Count == 1)
+                {
+                    panel.DockLayoutParent.parent.Remove(panel.DockLayoutParent);
+                }
+
+                panel.DockLayoutParent.Remove(panel);
+                
+            }
             
             base.Add(panel);
             
-            if (childCount == 1)
+            if (_dockTabLayout == null)
             {
-                Debug.Log("TABS");
                 style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Column);
                 CreateTabLayout(panel);
                 SetCurrentPanel(panel);
@@ -284,6 +298,8 @@ namespace DockGUI
                 _dockTabLayout.AddTab(panel);
                 HidePanel(panel);
             }
+            
+            
         }
 
         public void CreateTabLayout(DockPanel dockPanel)
@@ -296,9 +312,16 @@ namespace DockGUI
             _dockTabLayout = new DockTabLayout();
             _dockTabLayout.AddTab(dockPanel);
             _dockTabLayout.Select(dockPanel);
+
+            _dockTabLayout.name = dockPanel.Title + "_TabLayout";
             
             Insert(0, _dockTabLayout);
             
+        }
+
+        private new void Add(VisualElement element)
+        {
+            throw  new Exception();
         }
 
         private void SetCurrentPanel(DockPanel dockPanel)
@@ -317,6 +340,16 @@ namespace DockGUI
             dockPanel.style.display = new StyleEnum<DisplayStyle>(DisplayStyle.None);
         }
 
+        public bool HasDockLayoutParent()
+        {
+            if (parent == null)
+            {
+                return false;
+            }
+
+            return parent.GetType() == typeof(DockLayout);
+        }
+        
 
         //
         // private void Remove(DockPanel dockPanel)

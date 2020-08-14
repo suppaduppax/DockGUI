@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -46,13 +47,11 @@ namespace DockGUI
                 floatingLayout.Add(this);
                 
                 rootElement.Add(floatingLayout);
-                Debug.Log(rootElement.name);
-               
             }
             else
             {
+                Debug.Log("OAKY THIS ISWHATS GOING ON");
                 floatingLayout = dockLayoutParent;
-                
             }
 
             floatingLayout.AddToClassList("FloatingLayout");
@@ -60,6 +59,11 @@ namespace DockGUI
             floatingLayout.transform.position = new Vector3(x,y, floatingLayout.transform.position.z);
 
             return floatingLayout;
+        }
+        
+        private new void Add(VisualElement element)
+        {
+            throw new Exception();
         }
     }
 }

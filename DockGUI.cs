@@ -8,6 +8,7 @@ namespace DockGUI
 
     public static class DockGUI
     {
+        public const float REARRANGE_TAB_DISTANCE = 10.0f;
         public const float WORLD_WINDOW_OFFSET_X = -3.0f;
         public const float WORLD_WINDOW_OFFSET_Y = -22.0f;
         
