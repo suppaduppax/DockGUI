@@ -44,7 +44,7 @@ namespace DockGUI
                 floatingLayout.state = DockLayout.State.Floating;
                 // floatingLayout.CreateTabLayout(this);
 
-                floatingLayout.Add(this);
+                floatingLayout.AddPanel(this);
                 
                 rootElement.Add(floatingLayout);
             }

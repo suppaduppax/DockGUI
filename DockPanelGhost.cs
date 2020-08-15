@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Runtime.Remoting.Messaging;
 using UnityEditor;
 using UnityEngine;
@@ -14,6 +15,7 @@ namespace DockGUI
             None,
             TabLayout,
             Window,
+            DockLayout,
             DockLeft,
             DockRight,
             Docktop,
@@ -32,7 +34,7 @@ namespace DockGUI
         private DockPanel _targetPanel;
         
         private DockTabLayout _dropTabLayout;
-        private DockTab _dropTab;
+        private DockLayout _dropLayout;
         
         private bool _isDragging = false;
         private List<IDroppable> _droppables;
@@ -129,20 +131,21 @@ namespace DockGUI
                     }
                     break;
                 
-                case GhostState.DockLeft:
+                case GhostState.DockLayout:
+                    if (droppable != null && droppable == _dropTabLayout)
+                    {
+                        OnTabLayoutUpdate(new Vector2(x, y));
+                    }
+                    else
+                    {
+                        OnDockLayoutLeave();
+                    }
+
                     break;
                 
-                // case GhostState.Tab:
-                //     if (droppable != null && droppable == _dropTab)
-                //     {
-                //         OnTabUpdate(new Vector2(x, y));
-                //     }
-                //     else
-                //     {
-                //         OnTabLeave(evt);
-                //     }
-                //     break;
-                    
+                case GhostState.DockLeft:
+                    break;
+
                 default:
                     float minX = 0;
                     float minY = 0;
@@ -158,6 +161,8 @@ namespace DockGUI
                         {
                             OnTabLayoutEnter((DockTabLayout)droppable);
                         }
+                        else if (droppable.GetType() == typeof(DockLayout))
+                            OnDockLayoutEnter((DockLayout)droppable);
                         else
                         {
                             _state = GhostState.None;
@@ -167,6 +172,30 @@ namespace DockGUI
                     UpdatePosition(new Vector2(x, y), new Vector2(minX, minY), new Vector2(maxX, maxY));
                     break;
             }
+        }
+
+        private void OnDockLayoutLeave()
+        {
+            _state = GhostState.None;
+        }
+
+        private void OnDockLayoutUpdate(Vector2 mouseWithOffsetPosition)
+        {
+            if (mouseWithOffsetPosition.x < _dropLayout.worldBound.size.x * DockGUI.DOCK_LAYOUT_RATIO)
+            {
+                _dropLayout.Expand(_targetPanel, 0);
+            }
+            else
+            {
+                UpdatePosition(mouseWithOffsetPosition, Vector2.zero, _rootElement.worldBound.size);
+            }
+        }
+
+        private void OnDockLayoutEnter(DockLayout dockLayout)
+        {
+            Debug.Log("OHWTF");
+            _dropLayout = dockLayout;
+            _state = GhostState.DockLayout;
         }
 
         private void OnTabLayoutEnter(DockTabLayout tabLayout)
@@ -179,14 +208,14 @@ namespace DockGUI
 
         private void OnTabLayoutUpdate(Vector2 mousePositionWithOffset)
         {
-
+            Debug.Log("TABLAYOUT UPDATE");
             Vector2 min;
             Vector2 max;
   
             if (!_dropTabLayout.ContainsTab(_targetPanel))
             {
                 // add the panel with an invisible tab to the docklayout for inserting between already existing tabs
-                _dropTabLayout.DockLayoutParent.Add(_targetPanel);
+                _dropTabLayout.DockLayoutParent.AddPanel(_targetPanel);
                 DockTab tab = _dropTabLayout.GetTab(_targetPanel);
                 tab.visible = false;
             }
@@ -278,7 +307,6 @@ namespace DockGUI
         {
             switch (_state)
             {
-                case GhostState.Tab:
                 case GhostState.TabLayout:
                     _dropTabLayout.GetTab(_targetPanel).visible = true;
                     _dropTabLayout.Select(_targetPanel);
@@ -294,7 +322,6 @@ namespace DockGUI
             _rootElement.Remove(this);
 
             _targetPanel = null;
-            _dropTab = null;
             _dropTabLayout = null;
 
             if (_oldDroppable != null)

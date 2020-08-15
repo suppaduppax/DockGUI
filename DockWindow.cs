@@ -24,7 +24,7 @@ namespace DockGUI
                 rootVisualElement.Add(_rootDockLayout);
             }
             
-            _rootDockLayout.Add(dockPanel);
+            _rootDockLayout.AddPanel(dockPanel);
         }
 
         private DockLayout Dock(DockPanel panel, Border border)
@@ -38,7 +38,7 @@ namespace DockGUI
             dockLayout.hasDockPanels = true;
             _borderToLayoutDict.Add(border, dockLayout);
 
-            dockLayout.Add(panel);
+            dockLayout.AddPanel(panel);
             panel.style.backgroundColor = new StyleColor(Color.cyan);
 
             return dockLayout;

@@ -1,9 +1,11 @@
 .TabLayoutHeight {
     height: 22px;
+    white-space: nowrap;
 }
 
 .TabLabelNormal {
     font-size: 12px;
+    white-space: nowrap;
 }
 
 .TabLayoutBg {
@@ -108,9 +110,34 @@
     background-color: rgb(194, 194, 194);
 }
 
+.DockLayout {
+    border-width: 1;
+    border-color: black;
+}
+
 .GhostLayout {
     opacity: 0.5;
     position: absolute;
     /*width: 200px;*/
     /*height: 200px;*/
+}
+
+.DockLayoutFlex {
+    flex-grow: 1;
+}
+
+.DockLayoutLeft {
+    width: 30%;
+}
+
+.DockLayoutRight {
+    width: 30%;
+}
+
+.DockLayoutTop {
+    height: 30%;
+}
+
+.DockLayoutBottom {
+    height: 30%;
 }

@@ -94,6 +94,7 @@ namespace DockGUI
             tabs.Remove(tab);
             tabs.Insert(index, tab);
             
+            
             Remove(tab);
             Insert(index + 1, tab);
         }

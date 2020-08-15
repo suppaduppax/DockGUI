@@ -27,6 +27,11 @@ public static class DockGUIStyles
         Refresh();
     }
 
+    public static string[] DockingStyleNames()
+    {
+        return new string[]{"DockLayoutTop", "DockLayoutBottom", "DockLayoutLeft", "DockLayoutRight"};
+    }
+
     public static void Refresh()
     {
         Debug.Log("Refreshing...");

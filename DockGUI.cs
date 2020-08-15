@@ -11,6 +11,7 @@ namespace DockGUI
         public const float REARRANGE_TAB_DISTANCE = 10.0f;
         public const float WORLD_WINDOW_OFFSET_X = -3.0f;
         public const float WORLD_WINDOW_OFFSET_Y = -22.0f;
+        public const float DOCK_LAYOUT_RATIO = 0.3f;
         
         public static VisualElement CreateVisualElement(params string[] styleClasses)
         {

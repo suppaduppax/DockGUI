@@ -73,6 +73,7 @@ namespace DockGUI
             styleSheets.Add(styleSheet);
             _availableBorders = new List<Border>();
             AddToClassList("DockLayoutBg");
+            AddToClassList("DockLayout");
         }
 
         public void SetExpandDirection(Direction direction)
@@ -133,65 +134,89 @@ namespace DockGUI
             }
         }
 
-        /// <summary>
-        /// </summary>
-        /// <param name="dockPanel"></param>
-        /// <param name="index">The border index, left to right or top to bottom</param>
-        public void Expand(DockPanel dockPanel, int index)
+        private void SetDockingClass(string styleClass)
         {
-            if (hasDockPanels)
+            
+            foreach (var styleName in DockGUIStyles.DockingStyleNames())
             {
-                // move all dockpanels to a new docklayout to expand
-                DockLayout moveToLayout = new DockLayout();
-                DockGUIStyles.SetDefaultLayoutSize(ref moveToLayout, _expandDirection);
-                
-                var children = new List<VisualElement>(Children());
-                foreach (var element in children)
+                if (styleName == styleClass)
                 {
-                    moveToLayout.Add(element);
+                    continue;
                 }
                 
-                Add(moveToLayout);
-                
-                hasDockPanels = false;
+                if (ClassListContains(styleName))
+                {
+                    RemoveFromClassList(styleName);
+                }
             }
-            DockLayout dockLayoutParent = dockPanel.DockLayoutParent;
-            if (dockLayoutParent != null)
+
+            if (!ClassListContains(styleClass))
             {
-                Debug.Log("Removing " + dockPanel.name + " from " + dockLayoutParent);
-                dockPanel.DockLayoutParent.Remove(dockPanel);
+                AddToClassList(styleClass);
             }
-            
-            DockLayout dockLayout = new DockLayout();
-            DockGUIStyles.SetDefaultLayoutSize(ref dockLayout, _expandDirection);
-            
-            Add(dockLayout);
 
-            Insert(index, dockLayout);
-            dockLayout.Add(dockPanel);
-
-            CalculateSize();
-            
-            isExpanded = true;
         }
 
-        private void Remove(DockPanel dockPanel)
+        public void Expand(DockPanel dockPanel, Border border)
+        {
+            // remove the panel from a docklayout that has at least one other panel inside  
+            // if (dockPanel.DockLayoutParent != null)
+            // {
+            //     if (dockPanel.DockLayoutParent.DockPanels.Count > 1)
+            //     {
+            //         dockPanel.DockLayoutParent.Remove(dockPanel);
+            //     }
+            // }
+
+            DockLayout flexLayout = new DockLayout();
+            flexLayout.name = "Flex Layout";
+            foreach (var childPanel in DockPanels)
+            {
+                flexLayout.AddPanel(childPanel);
+            }
+            flexLayout.AddToClassList("DockLayoutFlex");
+            
+            DockLayout dockingLayout = new DockLayout();
+            dockingLayout.AddPanel(dockPanel);
+            dockingLayout.RemoveFromClassList("DockLayoutFlex");
+
+            switch (border)
+            {
+                case Border.Top:
+                    style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Column);
+                    // newPanelLayout.style.height = new StyleLength(new Length(DockGUI.DOCK_LAYOUT_RATIO * 100, LengthUnit.Percent));
+                    dockingLayout.SetDockingClass("DockLayoutTop");
+                    break;
+                
+                case Border.Left:
+                    style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row);
+                    // newPanelLayout.style.width = new StyleLength(new Length(DockGUI.DOCK_LAYOUT_RATIO * 100, LengthUnit.Percent));
+                    dockingLayout.SetDockingClass("DockLayoutLeft");
+                    break;
+            }
+            
+            // dockingLayout.RemoveFromClassList("DockLayoutFlex");
+            base.Add(dockingLayout);
+            base.Add(flexLayout);
+        }
+        
+        public void RemovePanel(DockPanel dockPanel)
         {
             base.Remove(dockPanel);
-            return;
 
-            if (childCount > 0)
+            if (_dockTabLayout.ContainsTab(dockPanel))
             {
-                Debug.Log("Calculating size for " + name);
-                CalculateSize();
+                _dockTabLayout.RemoveTab(dockPanel);
+                if (_dockTabLayout.tabs.Count == 0)
+                {
+                    base.Remove(_dockTabLayout);
+                    _dockTabLayout = null;
+                }
             }
-            else
-            {
-                DockLayoutParent.Remove(this);
-            }
+            return;
         }
 
-        private void Remove(DockLayout dockLayout)
+        private void RemoveLayout(DockLayout dockLayout)
         {
             Debug.Log("Removing " + dockLayout.name + " from " + name);
             base.Remove(dockLayout);
@@ -201,7 +226,7 @@ namespace DockGUI
             if (childCount == 0)
             {
                 Debug.Log("Removing " + name);
-                DockLayoutParent.Remove(this);
+                DockLayoutParent.RemoveLayout(this);
             }
             else
             {
@@ -210,6 +235,12 @@ namespace DockGUI
                 CalculateSize();
             }
         }
+
+        public new void Remove(VisualElement element)
+        {
+            throw new NotImplementedException();
+        }
+        
         
         private void CalculateSize()
         {
@@ -269,8 +300,8 @@ namespace DockGUI
 
             return curParent;
         }
-       
-        public void Add(DockPanel panel)
+
+        public void AddPanel(DockPanel panel)
         {
             hasDockPanels = true;
 
@@ -281,7 +312,7 @@ namespace DockGUI
                     panel.DockLayoutParent.parent.Remove(panel.DockLayoutParent);
                 }
 
-                panel.DockLayoutParent.Remove(panel);
+                panel.DockLayoutParent.RemovePanel(panel);
                 
             }
             
@@ -289,7 +320,10 @@ namespace DockGUI
             
             if (_dockTabLayout == null)
             {
+                // adding to fullsize window and not a floating window
                 style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Column);
+                // style.flexGrow = 1;
+                AddToClassList("DockLayoutFlex");
                 CreateTabLayout(panel);
                 SetCurrentPanel(panel);
             }
@@ -300,6 +334,11 @@ namespace DockGUI
             }
             
             
+        }
+
+        public new void Add(VisualElement element)
+        {
+            throw new NotImplementedException();
         }
 
         public void CreateTabLayout(DockPanel dockPanel)
@@ -317,11 +356,6 @@ namespace DockGUI
             
             Insert(0, _dockTabLayout);
             
-        }
-
-        private new void Add(VisualElement element)
-        {
-            throw  new Exception();
         }
 
         private void SetCurrentPanel(DockPanel dockPanel)

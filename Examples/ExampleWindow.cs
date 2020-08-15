@@ -21,17 +21,19 @@ namespace DockGUI
             DockGUIStyles.Refresh();
             
             DockPanel panel1 = new DockPanel("Panel 1");
+            panel1.Add(new Label("PAnel 1!"));
+
             DockPanel panel2 = new DockPanel("Panel 2");
-            DockPanel panel3 = new DockPanel("Panel 3");
             panel2.Add(new Label("PAnel 2 babehz"));
+
+            DockPanel panel3 = new DockPanel("Panel 3");
             panel3.Add(new Label("PAnel THREE"));
+            
             Add(panel1);
             Add(panel2);
-            Add(panel3);
-            
-            panel2.FreeFloat(200, 200);
-            panel3.FreeFloat(100, 0);
-            // panel2.DockLayoutParent.Add(panel3);
+                
+            panel1.DockLayoutParent.Expand(panel3, Border.Left);
+            panel3.DockLayoutParent.RemovePanel(panel3);
 
         }
     }
