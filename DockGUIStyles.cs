@@ -32,6 +32,16 @@ public static class DockGUIStyles
         return new string[]{"DockLayoutTop", "DockLayoutBottom", "DockLayoutLeft", "DockLayoutRight"};
     }
 
+    public static string[] DockingGhostStyleNames()
+    {
+        return new string[]{DockingGhostTop, DockingGhostBottom, DockingGhostLeft, DockingGhostRight};
+    }
+
+    public static string DockingGhostTop => "DockingGhostTop";
+    public static string DockingGhostBottom => "DockingGhostBottom";
+    public static string DockingGhostRight => "DockingGhostRight";
+    public static string DockingGhostLeft => "DockingGhostLeft";
+
     public static void Refresh()
     {
         Debug.Log("Refreshing...");
@@ -80,22 +90,7 @@ public static class DockGUIStyles
         element.style.paddingBottom = 3;
     }
 
-    public static void SetDefaultLayoutSize(ref DockLayout dockLayout, DockLayout.Direction direction)
-    {
-        switch (direction)
-        {
-            case DockLayout.Direction.Horizontal:
-                dockLayout.style.width = DockGUIStyles.DefaultStyleLength;
-                break;
-
-            case DockLayout.Direction.Vertical:
-                dockLayout.style.height = DockGUIStyles.DefaultStyleLength;
-                break;
-            
-            default:
-                throw new Exception("Invalid direction " + direction);
-        }
-    }
+   
 
     public static void DockLayoutBottom(ref DockLayout element)
     {

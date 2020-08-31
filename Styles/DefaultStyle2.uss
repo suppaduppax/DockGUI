@@ -111,12 +111,10 @@
 }
 
 .DockLayout {
-    border-width: 1;
-    border-color: black;
 }
 
 .GhostLayout {
-    opacity: 0.5;
+    /*opacity: 0.5;*/
     position: absolute;
     /*width: 200px;*/
     /*height: 200px;*/
@@ -140,4 +138,21 @@
 
 .DockLayoutBottom {
     height: 30%;
+}
+
+.DockPanel {
+    overflow: hidden;
+}
+
+.DockPanelLayout {
+    border-width: 1;
+    border-color: black;
+}
+
+.DockingGhostLeft {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    bottom: 0px;
+    width: 30%;
 }

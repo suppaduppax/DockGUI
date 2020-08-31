@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -15,28 +16,35 @@ namespace DockGUI
             None,
             TabLayout,
             Window,
-            DockLayout,
-            DockLeft,
-            DockRight,
-            Docktop,
-            DockBottom
+            DockPanelLayout,
+        }
+
+        public enum DockingState
+        {
+            None,
+            Left,
+            Right,
+            Top,
+            Bottom
         }
 
         private GhostState _state = GhostState.None;
+        private DockingState _dockingState = DockingState.None;
         
         private VisualElement _floatingWindow;
         private VisualElement _floatingTab;
-
-        private VisualElement _rootElement;
+        private VisualElement _proxyTab;
+        
+        private DockLayout _rootDockLayout;
         private Vector2 _mouseOffset;
 
         // private DockTabLayout _tabLayout;
-        private DockPanel _targetPanel;
+        private DockPanel _targetDockPanel;
         
-        private DockTabLayout _dropTabLayout;
-        private DockLayout _dropLayout;
+        private TabLayout _dropTabLayout;
+        private DockPanelLayout _dropPanelLayout;
+        private DockPanelLayout _dockingPanelLayout;
         
-        private bool _isDragging = false;
         private List<IDroppable> _droppables;
 
         public VisualElement TargetElement => this;
@@ -44,22 +52,24 @@ namespace DockGUI
         private IDroppable _oldDroppable;
         private Color _oldColour;
 
-        public DockPanelGhost(DockPanel panel, Vector2 mouseOffset)
-            : this(panel, mouseOffset, DockGUIStyles.DefaultStyle)
+        public DockPanelGhost(DockPanel dockPanel, Vector2 mouseOffset)
+            : this(dockPanel, mouseOffset, DockGUIStyles.DefaultStyle)
         {
         }
 
-        public DockPanelGhost(DockPanel panel, Vector2 mouseOffset,
+        public DockPanelGhost(DockPanel dockPanel, Vector2 mouseOffset,
             StyleSheet styleSheet)
         {
-            _targetPanel = panel;            
-            _rootElement = panel.DockLayoutParent.GetRootElement();
+            _targetDockPanel = dockPanel;           
+            _rootDockLayout = dockPanel.DockPanelLayoutParent.GetRootDockLayout();
             _mouseOffset = mouseOffset;
 
-            _targetPanel.DockLayoutParent.DockTabLayout.GetTab(panel).visible = false;
+            _targetDockPanel.DockPanelLayoutParent.TabLayout.GetTab(dockPanel).visible = false;
+            _targetDockPanel.DockPanelLayoutParent.TabLayout.GetTab(dockPanel).style.display = new StyleEnum<DisplayStyle>(DisplayStyle.None);
+
             // _targetPanel.DockLayoutParent.visible = false;
             
-            _droppables = DragAndDrop.GetAllDroppables(_rootElement);
+            _droppables = DragAndDrop.GetAllDroppables(_rootDockLayout);
 
             // create ghost panel ----
             styleSheets.Add(styleSheet);
@@ -74,9 +84,10 @@ namespace DockGUI
             VisualElement floatingWindowTab =
                 DockGUI.CreateVisualElement(floatingWindowTabLayout, styleSheet, "TabHighlight", "TabPadding");
             
-            floatingWindowTab.Add(new Label(panel.Title));
+            floatingWindowTab.Add(new Label(dockPanel.Title));
             DockGUI.CreateVisualElement(_floatingWindow, styleSheet).style.flexGrow = new StyleFloat(1);
 
+            _floatingWindow.style.opacity = new StyleFloat(0.5f);
             _floatingWindow.visible = false;
             // -----------------------
 
@@ -84,8 +95,22 @@ namespace DockGUI
             _floatingTab = DockGUI.CreateVisualElement(this, styleSheet, "TabLayoutHeight", "TabLayout");
             VisualElement _floatingTabButton =
                 DockGUI.CreateVisualElement(_floatingTab, styleSheet, "TabHighlight", "TabPadding");
-            _floatingTabButton.Add(new Label(panel.Title));
+            _floatingTabButton.Add(new Label(dockPanel.Title));
             // -----------------------
+            
+            
+            // create proxy tab
+            _proxyTab = DockGUI.CreateVisualElement(this, styleSheet, "TabLayoutHeight", "TabLayout");
+            VisualElement _proxyTabButton =
+                DockGUI.CreateVisualElement(_proxyTab, styleSheet, "TabHighlight", "TabPadding");
+            _proxyTabButton.Add(new Label(dockPanel.Title));
+
+            Tab tab = dockPanel.DockPanelLayoutParent.TabLayout.GetTab(dockPanel);
+            
+            _proxyTab.visible = false;
+            _proxyTab.style.display = new StyleEnum<DisplayStyle>(DisplayStyle.Flex);
+            
+            dockPanel.DockPanelLayoutParent.TabLayout.Insert(dockPanel.DockPanelLayoutParent.TabLayout.IndexOf(tab), _proxyTab);
             
             RegisterCallback<MouseUpEvent>(OnMouseUp);
             RegisterCallback<MouseMoveEvent>(OnMouseMove);
@@ -131,42 +156,43 @@ namespace DockGUI
                     }
                     break;
                 
-                case GhostState.DockLayout:
-                    if (droppable != null && droppable == _dropTabLayout)
+                case GhostState.DockPanelLayout:
+                    if (droppable != null && droppable == _dropPanelLayout)
                     {
-                        OnTabLayoutUpdate(new Vector2(x, y));
+                        OnDockPanelLayoutUpdate(new Vector2(x, y));
                     }
                     else
                     {
-                        OnDockLayoutLeave();
+                        OnDockPanelLayoutLeave();
                     }
 
                     break;
                 
-                case GhostState.DockLeft:
-                    break;
-
                 default:
                     float minX = 0;
                     float minY = 0;
             
-                    float maxX = _rootElement.worldBound.size.x;
-                    float maxY = _rootElement.worldBound.size.y;         
+                    float maxX = _rootDockLayout.worldBound.size.x;
+                    float maxY = _rootDockLayout.worldBound.size.y;         
                    
                     // List<IDroppable> droppablesUnderMouse = DragAndDrop.GetDroppablesUnderMouse(evt.mousePosition);
                     
                     if (droppable != null)
                     {
-                        if (droppable.GetType() == typeof(DockTabLayout))
+                        if (droppable.GetType() == typeof(TabLayout))
                         {
-                            OnTabLayoutEnter((DockTabLayout)droppable);
+                            OnTabLayoutEnter((TabLayout)droppable);
+                            return;
                         }
-                        else if (droppable.GetType() == typeof(DockLayout))
-                            OnDockLayoutEnter((DockLayout)droppable);
-                        else
+                        
+                        if (droppable.GetType() == typeof(DockPanelLayout))
                         {
-                            _state = GhostState.None;
+                            OnDockPanelLayoutEnter((DockPanelLayout) droppable);
+                            return;
                         }
+                        
+                        _state = GhostState.None;
+                        
                     }
 
                     UpdatePosition(new Vector2(x, y), new Vector2(minX, minY), new Vector2(maxX, maxY));
@@ -174,65 +200,118 @@ namespace DockGUI
             }
         }
 
-        private void OnDockLayoutLeave()
+        private void OnDockPanelLayoutLeave()
         {
             _state = GhostState.None;
+            _dockingState = DockingState.None;
         }
 
-        private void OnDockLayoutUpdate(Vector2 mouseWithOffsetPosition)
+        private void FreeFloat()
         {
-            if (mouseWithOffsetPosition.x < _dropLayout.worldBound.size.x * DockGUI.DOCK_LAYOUT_RATIO)
+            _floatingWindow.style.height = 200;
+            _floatingWindow.style.width = 200;
+            _dockingState = DockingState.None;
+            
+            UnsetDockingClass();
+        }
+        
+        private void DockLeft()
+        {
+            _floatingWindow.style.height = new StyleLength(_dropPanelLayout.worldBound.height);
+            _floatingWindow.style.width = new StyleLength(_dropPanelLayout.worldBound.width * 0.3f);
+            _floatingWindow.style.opacity = new StyleFloat(1);
+            _floatingWindow.transform.position = new Vector3(0, 0, 0);
+
+            transform.position = _dropPanelLayout.worldBound.position + new Vector2(0, DockGUI.WORLD_WINDOW_OFFSET_Y);
+
+            _dockingState = DockingState.Left;
+            
+            SetDockingClass(_floatingWindow, DockGUIStyles.DockingGhostLeft);
+        }
+
+        private void SetDockingClass(VisualElement element, string styleClass)
+        {
+            foreach (var styleName in DockGUIStyles.DockingGhostStyleNames())
             {
-                _dropLayout.Expand(_targetPanel, 0);
+                if (styleName == styleClass)
+                {
+                    continue;
+                }
+                
+                if (element.ClassListContains(styleName))
+                {
+                    element.RemoveFromClassList(styleName);
+                }
+            }
+
+            if (!element.ClassListContains(styleClass))
+            {
+                element.AddToClassList(styleClass);
+            }
+        }
+
+        public void UnsetDockingClass()
+        {
+            foreach (var styleName in DockGUIStyles.DockingStyleNames())
+            {
+                if (ClassListContains(styleName))
+                {
+                    RemoveFromClassList(styleName);
+                }
+            }
+        }
+
+        
+        private void OnDockPanelLayoutUpdate(Vector2 mouseWithOffsetPosition)
+        {
+            if (mouseWithOffsetPosition.x < _dropPanelLayout.worldBound.position.x + (_dropPanelLayout.worldBound.size.x * DockGUI.DOCK_LAYOUT_RATIO))
+            {
+                if (_dockingState != DockingState.Left)
+                {
+                    DockLeft();
+                }
             }
             else
             {
-                UpdatePosition(mouseWithOffsetPosition, Vector2.zero, _rootElement.worldBound.size);
+                if (_dockingState != DockingState.None)
+                {
+                    FreeFloat();
+                }
+
+                UpdatePosition(mouseWithOffsetPosition, Vector2.zero, _rootDockLayout.worldBound.size);
             }
         }
 
-        private void OnDockLayoutEnter(DockLayout dockLayout)
+        private void OnDockPanelLayoutEnter(DockPanelLayout dockPanelLayout)
         {
-            Debug.Log("OHWTF");
-            _dropLayout = dockLayout;
-            _state = GhostState.DockLayout;
+            ShowGhostPanel();
+            
+            // if (dockPanelLayout != _targetPanel.DockPanelLayoutParent)
+            // {
+                _dropPanelLayout = dockPanelLayout;
+                _state = GhostState.DockPanelLayout;
+            // }
         }
 
-        private void OnTabLayoutEnter(DockTabLayout tabLayout)
+        private void OnTabLayoutEnter(TabLayout tabLayout)
         {
             _state = GhostState.TabLayout;
             _dropTabLayout = tabLayout;
+
+            if (!_dropTabLayout.Contains(_proxyTab))
+            {
+                // add the panel with an invisible tab to the docklayout for inserting between already existing tabs
+                _dropTabLayout.Add(_proxyTab);
+                _proxyTab.style.display = new StyleEnum<DisplayStyle>(DisplayStyle.Flex);
+            }
             
             ShowGhostTab();
         }
 
         private void OnTabLayoutUpdate(Vector2 mousePositionWithOffset)
         {
-            Debug.Log("TABLAYOUT UPDATE");
             Vector2 min;
             Vector2 max;
-  
-            if (!_dropTabLayout.ContainsTab(_targetPanel))
-            {
-                // add the panel with an invisible tab to the docklayout for inserting between already existing tabs
-                _dropTabLayout.DockLayoutParent.AddPanel(_targetPanel);
-                DockTab tab = _dropTabLayout.GetTab(_targetPanel);
-                tab.visible = false;
-            }
-
-            foreach (var tab in _dropTabLayout.tabs)
-            {
-                if (tab.DockPanelTarget == _targetPanel)
-                {
-                    continue;
-                }
-                
-                if (Mathf.Abs(tab.worldBound.center.x - _floatingTab.worldBound.center.x) < DockGUI.REARRANGE_TAB_DISTANCE)
-                {
-                    _dropTabLayout.MoveTab(_dropTabLayout.tabs.IndexOf(tab), _dropTabLayout.GetTab(_targetPanel));
-                    break;
-                }
-            }
             
             min.x = _dropTabLayout.worldBound.x;
             min.y = _dropTabLayout.worldBound.y + DockGUI.WORLD_WINDOW_OFFSET_Y;
@@ -241,6 +320,36 @@ namespace DockGUI
             max.y = min.y + _dropTabLayout.TargetElement.worldBound.height;
             
             UpdatePosition(new Vector2(mousePositionWithOffset.x, mousePositionWithOffset.y), new Vector2(min.x, min.y), new Vector2(max.x, max.y));
+
+            int i = -1;
+           
+            // check if the mouse position is over another tab and insert the targetPanel tab there instead
+            foreach (var tab in _dropTabLayout.tabs)
+            {
+                i++;
+                
+                // if (tab.DockPanelTarget == _targetDockPanel)
+                // {
+                //     continue;
+                // }
+
+
+                // use minX instead of center for the first tab
+                // float tabX = i > 0 ? tab.worldBound.center.x : tab.worldBound.x;
+                // float floatX = i > 0 ? _floatingTab.worldBound.center.x : _floatingTab.worldBound.x;
+
+                float tabX = tab.worldBound.x;
+                float floatX = _floatingTab.worldBound.x;
+
+                if (Mathf.Abs(tabX - floatX) < DockGUI.REARRANGE_TAB_DISTANCE)
+                {
+                    if (tab.DockPanelTarget != _targetDockPanel)
+                    {
+                        _dropTabLayout.Insert(_dropTabLayout.IndexOf(tab), _proxyTab);
+                    }
+                    break;
+                }
+            }
         }
         
         private void OnTabLayoutLeave(IDroppable droppable, MouseMoveEvent evt)
@@ -250,19 +359,10 @@ namespace DockGUI
             var x = evt.mousePosition.x;
             var y = evt.mousePosition.y;
 
-            if (droppable != null)
-            {
-                if (droppable.GetType() == typeof(DockTab) &&
-                    _dropTabLayout == ((DockTab) droppable).DockTabLayoutParent)
-                {
-                    return;
-                }
-            }
-
-            _targetPanel.FreeFloat(x, y);
-            _targetPanel.DockLayoutParent.visible = false;
+            // _targetPanel.FreeFloat(x, y);
+            // _targetPanel.DockPanelLayoutParent.visible = false;
             _dropTabLayout = null;
-        
+            
             DragAndDrop.RefreshDroppables();
             
             ShowGhostPanel();
@@ -303,39 +403,102 @@ namespace DockGUI
             _floatingTab.style.visibility = new StyleEnum<Visibility>(Visibility.Hidden);
         }
 
+        private void HideAll()
+        {
+            _floatingWindow.style.visibility = new StyleEnum<Visibility>(Visibility.Hidden);
+            _floatingTab.style.visibility = new StyleEnum<Visibility>(Visibility.Hidden);
+        }
+
+        
         private void OnMouseUp(MouseUpEvent evt)
         {
+            Debug.Log(_state);
+
             switch (_state)
             {
                 case GhostState.TabLayout:
-                    _dropTabLayout.GetTab(_targetPanel).visible = true;
-                    _dropTabLayout.Select(_targetPanel);
+                    int index = _proxyTab.parent.IndexOf(_proxyTab) - 1;
+
+                    if (!_dropTabLayout.DockPanelLayoutParent.ContainsPanel(_targetDockPanel))
+                    {
+                        _dropTabLayout.DockPanelLayoutParent.AddPanel(_targetDockPanel);
+                    }
+
+                    Tab tab = _dropTabLayout.GetTab(_targetDockPanel);
+                    tab.style.display = new StyleEnum<DisplayStyle>(DisplayStyle.Flex);
+                    _dropTabLayout.MoveTab(index, tab);
+                    _dropTabLayout.Select(_targetDockPanel);
                     break;
-                
+
+                case GhostState.DockPanelLayout:
+                    if (_dockingState == DockingState.None)
+                    {
+                        _targetDockPanel.DockPanelLayoutParent.transform.position = transform.position;
+                    }
+                    else
+                    {
+                        Debug.Log("SHOULD HAVE DOCKED!?");
+                        _targetDockPanel.DockPanelLayoutParent.transform.position = Vector3.zero;
+                        Dock(_targetDockPanel, _dropPanelLayout, _dockingState);
+                    }
+
+                    break;
+
                 default:
-                    _targetPanel.DockLayoutParent.transform.position = transform.position;
+                    _targetDockPanel.DockPanelLayoutParent.transform.position = transform.position;
                     break;
             }
 
-            _targetPanel.DockLayoutParent.DockTabLayout.GetTab(_targetPanel).visible = true;
-            _targetPanel.DockLayoutParent.visible = true;
-            _rootElement.Remove(this);
+            _dockingPanelLayout = null;
 
-            _targetPanel = null;
+            _targetDockPanel.DockPanelLayoutParent.TabLayout.GetTab(_targetDockPanel).visible = true;
+            _targetDockPanel.DockPanelLayoutParent.visible = true;
+            _rootDockLayout.Remove(this);
+            
+            _proxyTab?.parent?.Remove(_proxyTab);
+
+            _targetDockPanel = null;
             _dropTabLayout = null;
-
+            
             if (_oldDroppable != null)
             {
                 _oldDroppable.TargetElement.style.backgroundColor = _oldColour;
             }
             
+            
             EndDrag();
         }
 
+        private void Dock(DockPanel dockPanel, DockPanelLayout dockPanelLayout, DockingState dockingState)
+        {
+            Debug.Log("Docking: " + dockingState);
+            
+            
+            switch (dockingState)
+            {
+                case DockingState.Left:
+                    dockPanelLayout.Dock(dockPanel, Border.Left);
+                    break;
+                
+                case DockingState.Right:
+                    dockPanelLayout.Dock(dockPanel, Border.Right);
+                    break;
+                
+                case DockingState.Top:
+                    dockPanelLayout.Dock(dockPanel, Border.Top);
+                    break;
+
+                case DockingState.Bottom:
+                    dockPanelLayout.Dock(dockPanel, Border.Bottom);
+                    break;
+                
+                default:
+                    throw new Exception("Invalid docking state for dock: " + dockingState);
+            }
+        }
       
         public void EndDrag()
         {
-            _isDragging = false;
             this.ReleaseMouse();
         }
         

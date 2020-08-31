@@ -15,8 +15,21 @@ namespace DockGUI
         private string _title;
 
         public string Title => _title;
-        public DockLayout DockLayoutParent => (DockLayout) parent;
-        public bool IsFloating => DockLayoutParent.IsFloating;
+        public DockPanelLayout DockPanelLayoutParent => (DockPanelLayout) parent;
+        public bool HasDockLayoutParent => parent is DockPanelLayout;
+        public bool IsFloating => DockPanelLayoutParent.IsFloating;
+        
+        public bool HasDockPanelLayoutParent {
+            get
+            {
+                if (parent == null)
+                {
+                    return false;
+                }
+
+                return parent.GetType() == typeof(DockPanelLayout);
+            }
+        }
 
         public DockPanel(string title) : this(title, DockGUIStyles.DefaultStyle) { }
 
@@ -24,39 +37,43 @@ namespace DockGUI
         {
             _title = title;
             styleSheets.Add(styleSheet);
+            AddToClassList("DockPanel");
         }
 
-        public DockLayout FreeFloat(float x, float y)
+        public DockPanelLayout FreeFloat(float x, float y)
         {
-            DockLayout dockLayoutParent = DockLayoutParent;
-            List<DockPanel> dockPanels = dockLayoutParent.DockPanels;
+            DockPanelLayout dockPanelLayoutParent = DockPanelLayoutParent;
+            List<DockPanel> dockPanels = dockPanelLayoutParent.DockPanels;
 
-            DockLayout floatingLayout = null;
+            DockPanelLayout floatingLayout = null;
+            DockLayout rootElement = dockPanelLayoutParent.GetRootDockLayout();
 
             if (dockPanels.Count > 1)
             {
-                VisualElement rootElement = dockLayoutParent.GetRootElement();
-                
-                dockLayoutParent.DockTabLayout.RemoveTab(this);
-
-                // create a new floating layout for this panel
-                floatingLayout = new DockLayout();
-                floatingLayout.state = DockLayout.State.Floating;
-                // floatingLayout.CreateTabLayout(this);
-
-                floatingLayout.AddPanel(this);
-                
-                rootElement.Add(floatingLayout);
+                // just detach this panel from the panelLayout 
+                dockPanelLayoutParent.RemovePanel(this);
             }
             else
             {
-                Debug.Log("OAKY THIS ISWHATS GOING ON");
-                floatingLayout = dockLayoutParent;
+                // no panels left in the panelLayout, destroy it
+                if (dockPanelLayoutParent.IsFloating)
+                {
+                    // if it's floating, it's not a flex/docked container, so just remove it normally 
+                    dockPanelLayoutParent.DockLayoutParent.Remove(dockPanelLayoutParent);
+                }
+                else
+                {
+                    dockPanelLayoutParent.DockLayoutParent.RemoveContainer(dockPanelLayoutParent);
+                }
             }
-
+            
+            // create a new floating layout for this panel
+            floatingLayout = new DockPanelLayout {IsFloating = true};
+            floatingLayout.AddPanel(this);
             floatingLayout.AddToClassList("FloatingLayout");
-
             floatingLayout.transform.position = new Vector3(x,y, floatingLayout.transform.position.z);
+
+            rootElement.Add(floatingLayout);
 
             return floatingLayout;
         }

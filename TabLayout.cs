@@ -8,28 +8,27 @@ using UnityEngine.UIElements;
 namespace DockGUI
 {
 
-    public class DockTabLayout : VisualElement, IDroppable
+    public class TabLayout : VisualElement, IDroppable
     {
-        public List<DockTab> tabs;
+        public List<Tab> tabs;
 
-        private Dictionary<DockPanel, DockTab> _panelToTabDict;
-        private Dictionary<DockTab, DockPanel> _tabToPanelDict;
+        private Dictionary<DockPanel, Tab> _panelToTabDict;
+        private Dictionary<Tab, DockPanel> _tabToPanelDict;
 
-        private DockTab _selectedTab;
+        private Tab _selectedTab;
 
         private VisualElement _flexSpace;
         private VisualElement _tabLayoutBg;
 
-        public DockLayout DockLayoutParent => (DockLayout) parent;
-        public bool IsFloating => DockLayoutParent.IsFloating;
+        public DockPanelLayout DockPanelLayoutParent => (DockPanelLayout) parent;
 
         public VisualElement TargetElement => this;
 
-        public DockTabLayout()
+        public TabLayout()
         {
-            tabs = new List<DockTab>();
-            _panelToTabDict = new Dictionary<DockPanel, DockTab>();
-            _tabToPanelDict = new Dictionary<DockTab, DockPanel>();
+            tabs = new List<Tab>();
+            _panelToTabDict = new Dictionary<DockPanel, Tab>();
+            _tabToPanelDict = new Dictionary<Tab, DockPanel>();
 
             styleSheets.Add(DockGUIStyles.DefaultStyle);
             AddToClassList("TabLayoutHeight");
@@ -53,20 +52,20 @@ namespace DockGUI
             return _panelToTabDict.ContainsKey(dockPanel);
         }
 
-        public DockTab GetTab(DockPanel dockPanel)
+        public Tab GetTab(DockPanel dockPanel)
         {
             return _panelToTabDict[dockPanel];
         }
 
-        public DockTab AddTab(DockPanel targetPanel)
+        public Tab AddTab(DockPanel targetPanel)
         {
-            DockTab tab = new DockTab(targetPanel,this);
+            Tab tab = new Tab(targetPanel,this);
             tab.text = targetPanel.Title;
             
             _panelToTabDict.Add(targetPanel, tab);
             _tabToPanelDict.Add(tab, targetPanel);
 
-            if (targetPanel.DockLayoutParent != null)
+            if (targetPanel.DockPanelLayoutParent != null)
             {
                 // if (targetPanel.DockLayoutParent.parent != null)
                 // {
@@ -83,7 +82,7 @@ namespace DockGUI
             return tab;
         }
 
-        public void MoveTab(int index, DockTab tab)
+        public void MoveTab(int index, Tab tab)
         {
             int curIndex = tabs.IndexOf(tab);
             if (curIndex == index)
@@ -92,9 +91,15 @@ namespace DockGUI
             }
             
             tabs.Remove(tab);
-            tabs.Insert(index, tab);
-            
-            
+            if (index > tabs.Count)
+            {
+                tabs.Add(tab);
+            }
+            else
+            {
+                tabs.Insert(index, tab);
+            }
+
             Remove(tab);
             Insert(index + 1, tab);
         }
@@ -104,7 +109,7 @@ namespace DockGUI
             RemoveTab(_panelToTabDict[targetPanel]);
         }
 
-        public void RemoveTab(DockTab tab)
+        public void RemoveTab(Tab tab)
         {
             DockPanel dockPanel = _tabToPanelDict[tab];
             
@@ -122,14 +127,14 @@ namespace DockGUI
             }
         }
 
-        public void OnTabClicked(DockTab dockTab)
+        public void OnTabClicked(Tab tab)
         {
-            if (_selectedTab == dockTab)
+            if (_selectedTab == tab)
             {
                 return;
             }
             
-            Select(dockTab);
+            Select(tab);
         }
 
         public void Select(DockPanel dockPanel)
@@ -137,7 +142,7 @@ namespace DockGUI
             Select(_panelToTabDict[dockPanel]);
         }
         
-        private void Select(DockTab tab)
+        private void Select(Tab tab)
         {
             if (_selectedTab != null)
             {
@@ -155,7 +160,7 @@ namespace DockGUI
             Deselect(_panelToTabDict[dockPanel]);
         }
 
-        private void Deselect(DockTab tab)
+        private void Deselect(Tab tab)
         {
             tab.Highlight(false);
             if (!_tabToPanelDict.ContainsKey(tab))
@@ -175,7 +180,7 @@ namespace DockGUI
             base.Add(element);
         }
 
-        public DockPanel GetPanel(DockTab tab)
+        public DockPanel GetPanel(Tab tab)
         {
             if (!_tabToPanelDict.ContainsKey(tab))
             {
